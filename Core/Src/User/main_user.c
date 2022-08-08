@@ -21,7 +21,7 @@
 char main_string[50];
 uint32_t main_counter = 0;
 
-static void main_task(){
+static void main_task(void *param){
 
 	while(1){
 		print_str("Main task loop executing\r\n");
