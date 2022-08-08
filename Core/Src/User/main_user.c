@@ -21,6 +21,9 @@
 char main_string[50];
 uint32_t main_counter = 0;
 
+char LED_string[50];
+uint32_t LEDCount = 0;
+
 static void main_task(){
 
 	while(1){
@@ -31,11 +34,26 @@ static void main_task(){
 	}
 }
 
+static void task_led(void *params)
+{
+	do{
+		//Toggle onboard LED
+		HAL_GPIO_TogglePin(/*To be completed*/);
+
+		print_str("LED executing\r\n");
+		sprintf(LED_string,"LED task iteration: 0x%08lx\r\n",LEDCount++);
+		print_str(LED_string);
+		vTaskDelay(/*To be completed*/);
+	}while(1);
+}
+
 
 void main_user(){
 	util_init();
 
 	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+
+	xTaskCreate(task_led,"LED task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	vTaskStartScheduler();
 
