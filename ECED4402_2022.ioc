@@ -4,6 +4,7 @@ FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,HEAP_NUMBER
 FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
+GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false
 Mcu.CPN=STM32F411RET6
 Mcu.Family=STM32F4
