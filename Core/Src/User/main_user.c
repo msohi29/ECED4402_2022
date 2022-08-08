@@ -67,7 +67,7 @@ void vApplicationIdleHook(void){
 
 /******************************************************************************
 This function contains an infinite loop, such that it can be called as a task.
-It prints the number of tick counts used by the idle tasks since the start of
+It prints the number of tick counts used by the idle tasks since the start
 of the program.
 ******************************************************************************/
 static void TaskPrintIdleCycleCount(void *params){
