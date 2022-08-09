@@ -1,8 +1,7 @@
 /*
  * main_user.c
  *
- *  Created on: Aug 8, 2022
- *      Author: Andre Hendricks
+ *
  */
 
 #include <stdio.h>
@@ -17,17 +16,64 @@
 //Required FreeRTOS header files
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
-char main_string[50];
-uint32_t main_counter = 0;
+QueueHandle_t xQueue;
+char receiver_string[] = "Received = 000\r\n";
 
-static void main_task(void *param){
+/******************************************************************************
+******************************************************************************/
+static void vSenderTask( void *pvParameters )
+{
+	int32_t lValueToSend;
+	BaseType_t xStatus;
 
-	while(1){
-		print_str("Main task loop executing\r\n");
-		sprintf(main_string,"Main task iteration: 0x%08lx\r\n",main_counter++);
-		print_str(main_string);
-		vTaskDelay(1000/portTICK_RATE_MS);
+
+	lValueToSend = ( int32_t ) pvParameters;
+
+	for( ;; )
+	{
+		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
+		if( xStatus != pdPASS )
+		{
+			print_str( "Could not send to the queue.\r\n" );
+		}
+		vTaskDelay(50);
+	}
+}
+
+
+/******************************************************************************
+******************************************************************************/
+static void vReceiverTask( void *pvParameters )
+{
+	int32_t lReceivedValue;
+	BaseType_t xStatus;
+	const TickType_t xTicksToWait = pdMS_TO_TICKS( 100 );
+
+	for( ;; )
+	{
+		/* Verify if queue is empty. */
+		if( uxQueueMessagesWaiting( xQueue ) != 0 )
+		{
+			print_str( "Queue is not empty!\r\n" );
+		}
+		/* Receive data from the queue. */
+		xStatus = xQueueReceive( xQueue, &lReceivedValue, xTicksToWait );
+		if( xStatus == pdPASS )
+		{
+			/* Data was successfully received from the queue, print out the received
+			value. */
+			sprintf(&receiver_string[11], "%ld", lReceivedValue);
+			receiver_string[14] = '\r';
+			receiver_string[15] = '\n';
+			print_str(receiver_string);
+		}
+		else
+		{
+			// Data was not received from the queue even after waiting
+			print_str( "Could not receive from the queue.\r\n" );
+		}
 	}
 }
 
@@ -35,9 +81,20 @@ static void main_task(void *param){
 void main_user(){
 	util_init();
 
-	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+	// The queue is created
+	xQueue = xQueueCreate( 5, sizeof( int32_t ) );
+	if( xQueue != NULL )
+	{
+		// sender tasks.
+		xTaskCreate( vSenderTask, "Sender1", 1000, ( void * ) 100, 1, NULL );
+		xTaskCreate( vSenderTask, "Sender2", 1000, ( void * ) 200, 1, NULL );
 
-	vTaskStartScheduler();
+		// Receiver task
+		xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, 2, NULL );
+
+		// Start the scheduler so the created tasks start executing.
+		vTaskStartScheduler();
+	}
 
 	while(1);
 
