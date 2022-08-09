@@ -17,17 +17,31 @@
 //Required FreeRTOS header files
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
-char main_string[50];
-uint32_t main_counter = 0;
+uint32_t SharedCounter = 0;
 
-static void main_task(void *param){
 
-	while(1){
-		print_str("Main task loop executing\r\n");
-		sprintf(main_string,"Main task iteration: 0x%08lx\r\n",main_counter++);
-		print_str(main_string);
-		vTaskDelay(1000/portTICK_RATE_MS);
+/******************************************************************************
+******************************************************************************/
+static void vSenderTask( void *pvParameters )
+{
+	uint32_t buffer =0;
+	char ibuff[50];
+
+
+	for( ;; )
+	{
+		/* The following set of operations is updating the SharedCounter
+		 after a long delay. */
+		buffer = SharedCounter;
+		buffer++;
+		vTaskDelay(1000);
+		SharedCounter = buffer;
+
+		// then, sending it to the USART.
+		sprintf(ibuff,"%ld\r\n",SharedCounter);
+		print_str(ibuff);
 	}
 }
 
@@ -35,10 +49,14 @@ static void main_task(void *param){
 void main_user(){
 	util_init();
 
-	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+	// this task will increment by 1.
+	xTaskCreate( vSenderTask, "Sender1", 1000, ( void * ) 1, 1, NULL );
+
+	// so will this one.
+	xTaskCreate( vSenderTask, "Sender2", 1000, ( void * ) 1, 1, NULL );
 
 	vTaskStartScheduler();
 
-	while(1);
+	while(1); // we should never reach here.
 
 }
