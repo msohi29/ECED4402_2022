@@ -17,10 +17,15 @@
 //Required FreeRTOS header files
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 char main_string[50];
 uint32_t main_counter = 0;
 
+/******************************************************************************
+This is a task handler that prints periodically.
+No changes are required.
+******************************************************************************/
 static void main_task(void *param){
 
 	while(1){
@@ -31,7 +36,45 @@ static void main_task(void *param){
 	}
 }
 
+/******************************************************************************
+This task handler needs to be completed.
+It should toggle the LED on a rising edge.  Use the call to
+"HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_A);
+And send a message to the console of the host computer to indicate
+that a new loop of the task_led has been run.
+The message should show the number of times it has been run.
+This task handler should not use any delays
+******************************************************************************/
+static void task_led(void *params)
+{
+	uint32_t LEDCount = 0;
+	char ibuff[50];
 
+	do {
+
+	}while(1);
+}
+
+
+/******************************************************************************
+This is the callback function for onboard blue button.
+To be completed.
+******************************************************************************/
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == GPIO_PIN_13){
+		print_str_ISR("Blue Button Pressed\r\n");
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	}
+}
+
+/******************************************************************************
+main to be completed.
+Make sure that the buttons and interrupts are configured.
+Create a binary semaphore after initialization.
+Additionally to the main_task, if the semaphore is created, create a second
+task with the handler task_led.
+Don't forget to start the scheduler!
+******************************************************************************/
 void main_user(){
 	util_init();
 
