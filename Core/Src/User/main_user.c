@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 //STM32 generated header files
 #include "main.h"
@@ -38,7 +39,7 @@ static void main_task(void *param)
 	do {
 		print_str("Main task loop executing ");
 
-		sprintf(main_string,"Main task iteration: 0x%08x\r\n",main_counter++);
+		sprintf(main_string,"Main task iteration: 0x%08lx\r\n",main_counter++);
 		print_str(main_string);
 
 		// creation of tasks
