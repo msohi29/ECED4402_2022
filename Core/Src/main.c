@@ -19,10 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "User/main_user.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "User/main_user.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
