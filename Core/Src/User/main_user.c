@@ -38,7 +38,7 @@ functionality.
 ******************************************************************************/
 static void PrintStringTask(void *params){
 	int *type = (int *)params;
-	print_str("This task is created by me\r\n");
+	
 	switch (*type){
 	case 0:
 		do{
