@@ -41,6 +41,7 @@ void send_sensorEnable_message(enum SensorId_t sensorType, uint16_t TimePeriod);
 void send_sensorReset_message(void);
 
 void initialize_sensor_datalink(void);
+void initialize_hostPC_datalink(void);
 void parse_sensor_message(struct CommMessage* currentRxMessage);
 
 enum HostPCCommands parse_hostPC_message();

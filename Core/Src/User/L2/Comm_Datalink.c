@@ -63,8 +63,6 @@ void parse_sensor_message(struct CommMessage* currentRxMessage)
 	static uint8_t checksum_val;
 	static const struct CommMessage EmptyMessage = {0};
 
-	BaseType_t xStatus;
-
 	while(xQueueReceive(Queue_extern_UART, &CurrentChar, portMAX_DELAY) == pdPASS && currentRxMessage->IsMessageReady == false)  // as long as there are characters in the queue.
 	{
 		if (CurrentChar == '$'){ //Reset State Machine
