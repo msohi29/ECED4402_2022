@@ -34,18 +34,18 @@ static void main_task(void *params){
 	}
 }
 
-//static void task_led(void *params)
-//{
-//	do{
-//		//Toggle onboard LED
-//		HAL_GPIO_TogglePin(/*To be completed*/);
-//
-//		print_str("LED executing\r\n");
-//		sprintf(LED_string,"LED task iteration: 0x%08lx\r\n",LEDCount++);
-//		print_str(LED_string);
-//		vTaskDelay(/*To be completed*/);
-//	}while(1);
-//}
+static void task_led(void *params)
+{
+	do{
+		//Toggle onboard LED
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+		print_str("LED executing\r\n");
+		sprintf(LED_string,"LED task iteration: 0x%08lx\r\n",LEDCount++);
+		print_str(LED_string);
+		vTaskDelay(500);
+	}while(1);
+}
 
 
 void main_user(){
@@ -53,7 +53,7 @@ void main_user(){
 
 	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
 
-	//xTaskCreate(task_led,"LED task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(task_led,"LED task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	vTaskStartScheduler();
 
