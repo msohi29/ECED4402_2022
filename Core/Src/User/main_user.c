@@ -44,7 +44,7 @@ static void main_task(void *param)
 
 		// creation of tasks
 		if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == GPIO_PIN_RESET){  // create
-
+			xEventGroupClearBits(xEventGroup, 0xFFFF ); // clears all bits
 			res = xTaskCreate(&PrintTaskID, (const char*)"subtask",
 						configMINIMAL_STACK_SIZE+100,
 						(void *) taskcount, tskIDLE_PRIORITY+2,
