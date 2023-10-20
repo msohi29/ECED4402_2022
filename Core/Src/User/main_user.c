@@ -3,6 +3,9 @@
  *
  *  Created on: Aug 8, 2022
  *      Author: Andre Hendricks
+ *      Modified by: Jacob MacDonal, Manav Sohi
+ *      ID: B00834513, B00844935
+ *      Date: October 13th, 2023
  */
 
 #include <stdio.h>
@@ -24,12 +27,29 @@ uint32_t main_counter = 0;
 void PrintTaskID(void * params) {
 	char buff[50];
 
+	/* Get the TaskID from vTaskCreate() */
 	int id = *(int*)params;
+
+	/* Variable to store the ticks the task has been running for */
+	TickType_t ticks = 0;
 
 	while(1) {
 		sprintf(buff, "Task %d is printing\r\n", id);
 		print_str(buff);
 
+		/* Get the number of ticks the task has been running for */
+		ticks = xTaskGetTickCount();
+
+		/* delete the task if it has been running for more than 20 seconds or 20,000 ticks */
+		if(ticks >= 20000 / portTICK_RATE_MS) {
+			sprintf(buff, "Deleted Task %d\r\n", id);
+			print_str(buff);
+
+			/* When NULL is passed to vTaskDelete(), it deletes the Task that called it*/
+			vTaskDelete(NULL);
+		}
+
+		/* Pauses for a period of one second */
 		vTaskDelay(1000 / portTICK_RATE_MS);
 	}
 }
@@ -62,18 +82,11 @@ static void main_task(void *params)
 				print_str_ISR(ibuff);
 				TaskID++;
 			}
-			Button = 0;
-			//Delete new task if button B was pressed
-		}
-		else if(Button == GPIO_PIN_12 && TaskID > 0)
-		{
-			TaskID--;
-			vTaskDelete(xHandle[TaskID]);
-			sprintf(ibuff,"Deleted task new task %d \r\n", TaskID);
-			print_str_ISR(ibuff);
 
+			/* Reset global variable button */
 			Button = 0;
 		}
+
 		val = xPortGetFreeHeapSize() ;
 		sprintf(ibuff,"Size = %d Bytes\r\n",val);
 		print_str_ISR(ibuff);
@@ -85,12 +98,14 @@ static void main_task(void *params)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == GPIO_PIN_10){
 		print_str_ISR("Button A Pressed\r\n");
-		//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+		/* Update global variable button, which is used by main_task to check for button push */
 		Button = GPIO_Pin;
 	}
 	else if(GPIO_Pin == GPIO_PIN_12){
 		print_str_ISR("Button B Pressed\r\n");
-		//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+		/* Update global variable button, which is used by main_task to check for button push */
 		Button = GPIO_Pin;
 	}
 }
