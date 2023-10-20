@@ -22,6 +22,8 @@
 char main_string[50];
 uint32_t main_counter = 0;
 
+static SemaphoreHandle_t binary_semaphore;
+
 /******************************************************************************
 This is a task handler that prints periodically.
 No changes are required.
@@ -52,6 +54,12 @@ static void task_led(void *params)
 
 	do {
 
+		xSemaphoreTake(binary_semaphore, portMAX_DELAY);
+		sprintf(ibuff, "LEDCount: 0x%08lx\r\n", ++LEDCount);
+		print_str(ibuff);
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//		xSemaphoreGive(binary_semaphore);
+//		vTaskDelay(1000);
 	}while(1);
 }
 
@@ -61,9 +69,14 @@ This is the callback function for onboard blue button.
 To be completed.
 ******************************************************************************/
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	if(GPIO_Pin == GPIO_PIN_13){
+//		print_str_ISR("Blue Button Pressed\r\n");
+//		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		xSemaphoreGiveFromISR(binary_semaphore, &xHigherPriorityTaskWoken );
+//		xSemaphoreGive(binary_semaphore);
 		print_str_ISR("Blue Button Pressed\r\n");
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	}
 }
 
@@ -78,8 +91,10 @@ Don't forget to start the scheduler!
 void main_user(){
 	util_init();
 
-	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+	binary_semaphore = xSemaphoreCreateBinary();
 
+	xTaskCreate(main_task,"Main Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(task_led, "LED Task", configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY + 2, NULL);
 	vTaskStartScheduler();
 
 	while(1);
