@@ -24,6 +24,12 @@
 QueueHandle_t Queue_Sensor_Data;
 QueueHandle_t Queue_HostPC_Data;
 
+int Sensors_Enable_Expired = 0;
+
+TimerHandle_t xTimer;
+
+
+enum states {Start_Sensors, Parse_Sensor_Data, Disable_Sensors, Wait_};
 
 static void ResetMessageStruct(struct CommMessage* currentRxMessage){
 
@@ -31,12 +37,76 @@ static void ResetMessageStruct(struct CommMessage* currentRxMessage){
 	*currentRxMessage = EmptyMessage;
 }
 
+void CheckEnableSensor( TimerHandle_t xTimer )
+{
+	Sensors_Enable_Expired = 1;
+
+}
+
 /******************************************************************************
 This task is created from the main.
 ******************************************************************************/
 void SensorControllerTask(void *params)
 {
+	//char HostPCMessage[50];
+	struct CommMessage currentRxMessage = {0};
+	int Acoustic_enabled = 0, Depth_enabled = 0;
+
+	enum states state = Wait_;
+
+	xTimer = xTimerCreate("Timer1",5000,pdTRUE,( void * ) 0, CheckEnableSensor);
+
 	do {
+		switch(state)
+		{
+
+
+		case Wait_:
+
+			request_hostPC_read();
+			enum HostPCCommands command = parse_hostPC_message();
+
+			if(command == PC_Command_START) {
+				state = Start_Sensors;
+			} else {
+				state = Wait_;
+			}
+
+			break;
+
+		case Start_Sensors:
+
+			send_sensorEnable_message(Acoustic, 5000);
+			send_sensorEnable_message(Depth, 5000);
+
+			// Start timer:
+			xTimerStart(xTimer, 0);
+
+			while(!Sensors_Enable_Expired) {
+				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
+					if(currentRxMessage.messageId == 1) {
+						if(currentRxMessage.SensorID == Acoustic) {
+							Acoustic_enabled = 1;
+						} else if (currentRxMessage.SensorID == Depth) {
+							Depth_enabled = 1;
+						}
+					}
+				}
+				ResetMessageStruct(&currentRxMessage);
+			}
+
+			// Stop timer:
+			xTimerStop(xTimer, 0);
+
+			if(Acoustic_enabled && Depth_enabled) {
+				state = Parse_Sensor_Data;
+			} else {
+				state = Start_Sensors;
+				Sensors_Enable_Expired = 0;
+			}
+			break;
+		}
+
 		vTaskDelay(1000 / portTICK_RATE_MS);
 	} while(1);
 }
