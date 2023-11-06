@@ -57,8 +57,6 @@ void SensorControllerTask(void *params)
 	xTimer = xTimerCreate("Timer1",5000,pdTRUE,( void * ) 0, CheckEnableSensor);
 
 	char str[60];
-	sprintf(str, "Waiting for input, State: %d\n", state);
-	print_str(str);
 
 	do {
 		switch(state)
@@ -67,12 +65,16 @@ void SensorControllerTask(void *params)
 
 			enum HostPCCommands HostPCCommand = PC_Command_NONE;
 
-			sprintf(str, "Waiting for input, State: %d\r\n", state);
+			sprintf(str, "<<<<<<<<<<<<< Waiting for input from PC >>>>>>>>>>>>>\r\n");
 			print_str(str);
 
-			if(xQueueReceive(Queue_HostPC_Data, &HostPCCommand, 0) == pdPASS && HostPCCommand == PC_Command_START)
+			if(xQueueReceive(Queue_HostPC_Data, &HostPCCommand, 0) == pdPASS)
 			{
-				state = Start_Sensors;
+				sprintf(str, "Command from PC: %s\r\n", (HostPCCommand == 0 ? "EMPTY" : (HostPCCommand == 1 ? "START" : "RESET")));
+				print_str(str);
+				if(HostPCCommand == PC_Command_START) {
+					state = Start_Sensors;
+				}
 			}
 			else {
 				state = Wait_;
@@ -81,6 +83,9 @@ void SensorControllerTask(void *params)
 			break;
 
 		case Start_Sensors:
+
+			sprintf(str, "<<<<<<<<<<<<<<<<< Starting Sensors >>>>>>>>>>>>>>\r\n");
+			print_str(str);
 
 			send_sensorEnable_message(Acoustic, 5000);
 			send_sensorEnable_message(Depth, 5000);
