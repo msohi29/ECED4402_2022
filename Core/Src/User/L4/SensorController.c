@@ -158,7 +158,7 @@ void SensorControllerTask(void *params)
 			{
 				sprintf(str, "Command from PC: %s\r\n", states_str[HostPCCommand]);
 				print_str(str);
-				if(HostPCCommand == PC_Command_START) {
+				if(HostPCCommand == PC_Command_RESET) {
 					state = Disable_Sensors;
 				}
 			}
