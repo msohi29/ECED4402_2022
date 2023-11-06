@@ -24,12 +24,13 @@
 QueueHandle_t Queue_Sensor_Data;
 QueueHandle_t Queue_HostPC_Data;
 
-int Sensors_Enable_Expired = 0;
+int Sensors_Expired = 0;
 
 TimerHandle_t xTimer;
 
 
 enum states {Start_Sensors, Parse_Sensor_Data, Disable_Sensors, Wait_};
+char states_str[3][6] = {"EMPTY", "START", "RESET"};
 
 static void ResetMessageStruct(struct CommMessage* currentRxMessage){
 
@@ -39,7 +40,7 @@ static void ResetMessageStruct(struct CommMessage* currentRxMessage){
 
 void CheckEnableSensor( TimerHandle_t xTimer )
 {
-	Sensors_Enable_Expired = 1;
+	Sensors_Expired = 1;
 
 }
 
@@ -50,7 +51,7 @@ void SensorControllerTask(void *params)
 {
 	//char HostPCMessage[50];
 	struct CommMessage currentRxMessage = {0};
-	int Acoustic_enabled = 0, Depth_enabled = 0;
+	int Acoustic_enabled = 0, Depth_enabled = 0, Disabled = 0;
 
 	enum states state = Wait_;
 
@@ -70,7 +71,7 @@ void SensorControllerTask(void *params)
 
 			if(xQueueReceive(Queue_HostPC_Data, &HostPCCommand, 0) == pdPASS)
 			{
-				sprintf(str, "Command from PC: %s\r\n", (HostPCCommand == 0 ? "EMPTY" : (HostPCCommand == 1 ? "START" : "RESET")));
+				sprintf(str, "Command from PC: %s\r\n", states_str[HostPCCommand]);
 				print_str(str);
 				if(HostPCCommand == PC_Command_START) {
 					state = Start_Sensors;
@@ -93,9 +94,9 @@ void SensorControllerTask(void *params)
 			// Start timer:
 			xTimerStart(xTimer, 0);
 
-			while(!Sensors_Enable_Expired) {
+			while(!Sensors_Expired) {
 				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
-					if(currentRxMessage.messageId == 1) {
+					if(currentRxMessage.messageId == 1) { // 1-> Ack Message
 						if(currentRxMessage.SensorID == Acoustic) {
 							Acoustic_enabled = 1;
 						} else if (currentRxMessage.SensorID == Depth) {
@@ -113,11 +114,92 @@ void SensorControllerTask(void *params)
 				state = Parse_Sensor_Data;
 			} else {
 				state = Start_Sensors;
-				Sensors_Enable_Expired = 0;
+				Sensors_Expired = 0;
 			}
 			break;
 
 		case Parse_Sensor_Data:
+
+
+			// Parse and display sensor data:
+			sprintf(str, "<<<<<<<<<<<<< Parsing Sensor Data >>>>>>>>>>>>>\r\n");
+			print_str(str);
+
+			// FILL THIS TO DISPLAY SENSOR DATA
+
+			// Start timer:
+			xTimerStart(xTimer, 0);
+
+			while(!Sensors_Expired) {
+				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
+					if(currentRxMessage.messageId == 3) { // 3 -> data message
+						if(currentRxMessage.SensorID == Acoustic) {
+							sprintf(str, "Acoustic Sensor Data: %d\r\n", currentRxMessage.params);
+						} else if (currentRxMessage.SensorID == Depth) {
+							sprintf(str, "Depth Sensor Data: %d\r\n", currentRxMessage.params);
+						}
+
+						print_str(str);
+					}
+				}
+				ResetMessageStruct(&currentRxMessage);
+
+			}
+
+			// Stop timer:
+			xTimerStop(xTimer, 0);
+
+
+			// Check for RESET from computer:
+			sprintf(str, "<<<<<<<<<<<<< Checking for RESET from PC >>>>>>>>>>>>>\r\n");
+			print_str(str);
+
+			if(xQueueReceive(Queue_HostPC_Data, &HostPCCommand, 0) == pdPASS)
+			{
+				sprintf(str, "Command from PC: %s\r\n", states_str[HostPCCommand]);
+				print_str(str);
+				if(HostPCCommand == PC_Command_START) {
+					state = Disable_Sensors;
+				}
+			}
+			else {
+				state = Parse_Sensor_Data;
+			}
+
+			break;
+
+		case Disable_Sensors:
+
+			// Disabling sensors:
+			sprintf(str, "<<<<<<<<<<<<< Disabling sensors >>>>>>>>>>>>>\r\n");
+			print_str(str);
+
+			send_sensorReset_message();
+
+			// Start timer:
+			xTimerStart(xTimer, 0);
+
+			while(!Sensors_Expired) {
+				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
+					if(currentRxMessage.messageId == 1 && currentRxMessage.SensorID == Controller) { // 1 -> Ack message
+						Disabled = 1;
+					}
+				}
+				ResetMessageStruct(&currentRxMessage);
+			}
+
+			// Stop timer:
+			xTimerStop(xTimer, 0);
+
+			if(Disabled) {
+				state = Wait_;
+			} else {
+				state = Disable_Sensors;
+				Sensors_Expired = 0;
+			}
+
+			break;
+
 		default:
 			break;
 		}
