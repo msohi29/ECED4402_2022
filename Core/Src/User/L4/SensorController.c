@@ -56,19 +56,25 @@ void SensorControllerTask(void *params)
 
 	xTimer = xTimerCreate("Timer1",5000,pdTRUE,( void * ) 0, CheckEnableSensor);
 
+	char str[60];
+	sprintf(str, "Waiting for input, State: %d\n", state);
+	print_str(str);
+
 	do {
 		switch(state)
 		{
-
-
 		case Wait_:
 
-			request_hostPC_read();
-			enum HostPCCommands command = parse_hostPC_message();
+			enum HostPCCommands HostPCCommand = PC_Command_NONE;
 
-			if(command == PC_Command_START) {
+			sprintf(str, "Waiting for input, State: %d\r\n", state);
+			print_str(str);
+
+			if(xQueueReceive(Queue_HostPC_Data, &HostPCCommand, 0) == pdPASS && HostPCCommand == PC_Command_START)
+			{
 				state = Start_Sensors;
-			} else {
+			}
+			else {
 				state = Wait_;
 			}
 
@@ -104,6 +110,10 @@ void SensorControllerTask(void *params)
 				state = Start_Sensors;
 				Sensors_Enable_Expired = 0;
 			}
+			break;
+
+		case Parse_Sensor_Data:
+		default:
 			break;
 		}
 
