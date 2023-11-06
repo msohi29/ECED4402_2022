@@ -75,10 +75,12 @@ void SensorControllerTask(void *params)
 				print_str(str);
 				if(HostPCCommand == PC_Command_START) {
 					state = Start_Sensors;
+					Sensors_Expired = 0;
 				}
 			}
 			else {
 				state = Wait_;
+				Sensors_Expired = 0;
 			}
 
 			break;
@@ -88,7 +90,7 @@ void SensorControllerTask(void *params)
 			sprintf(str, "<<<<<<<<<<<<<<<<< Starting Sensors >>>>>>>>>>>>>>\r\n");
 			print_str(str);
 
-			send_sensorEnable_message(Acoustic, 5000);
+			send_sensorEnable_message(Acoustic, 1000);
 			send_sensorEnable_message(Depth, 5000);
 
 			// Start timer:
@@ -112,6 +114,7 @@ void SensorControllerTask(void *params)
 
 			if(Acoustic_enabled && Depth_enabled) {
 				state = Parse_Sensor_Data;
+				Sensors_Expired = 0;
 			} else {
 				state = Start_Sensors;
 				Sensors_Expired = 0;
@@ -138,8 +141,6 @@ void SensorControllerTask(void *params)
 						} else if (currentRxMessage.SensorID == Depth) {
 							sprintf(str, "Depth Sensor Data: %d\r\n", currentRxMessage.params);
 						}
-
-						print_str(str);
 					}
 				}
 				ResetMessageStruct(&currentRxMessage);
@@ -148,6 +149,8 @@ void SensorControllerTask(void *params)
 
 			// Stop timer:
 			xTimerStop(xTimer, 0);
+
+			print_str(str);
 
 
 			// Check for RESET from computer:
@@ -160,10 +163,12 @@ void SensorControllerTask(void *params)
 				print_str(str);
 				if(HostPCCommand == PC_Command_RESET) {
 					state = Disable_Sensors;
+					Sensors_Expired = 0;
 				}
 			}
 			else {
 				state = Parse_Sensor_Data;
+				Sensors_Expired = 0;
 			}
 
 			break;
@@ -193,6 +198,7 @@ void SensorControllerTask(void *params)
 
 			if(Disabled) {
 				state = Wait_;
+				Sensors_Expired = 0;
 			} else {
 				state = Disable_Sensors;
 				Sensors_Expired = 0;
