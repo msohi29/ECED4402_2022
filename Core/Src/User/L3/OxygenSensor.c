@@ -24,11 +24,13 @@ void RunOxygenSensor(TimerHandle_t xTimer)
 	uint16_t o2 = 0;
 	uint16_t o2_prev = 0;
 
-	if(TempUp) {
-		while((o2 = (rand() % variance) + mean) > o2_prev);
-	} else {
-		while((o2 = (rand() % variance) + mean) < o2_prev);
-	}
+//	if(TempUp) {
+//		while((o2 = (rand() % variance) + mean) > o2_prev);
+//	} else {
+//		while((o2 = (rand() % variance) + mean) < o2_prev);
+//	}
+
+	o2 = (rand() % variance) + mean;
 
 	send_sensorData_message(Oxygen, o2);
 }

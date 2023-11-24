@@ -90,8 +90,8 @@ void SensorControllerTask(void *params)
 			sprintf(str, "<<<<<<<<<<<<<<<<< Starting Sensors >>>>>>>>>>>>>>\r\n");
 			print_str(str);
 
-			send_sensorEnable_message(pH, 5000);
-			send_sensorEnable_message(Oxygen, 5000);
+			send_sensorEnable_message(pH, 1000);
+			send_sensorEnable_message(Oxygen, 2500);
 			send_sensorEnable_message(Temperature, 5000);
 
 			// Start timer:
@@ -233,7 +233,7 @@ void SensorPlatform_RX_Task(){
 
 	request_sensor_read();  // requests a usart read (through the callback)
 
-	while(1){
+	while(1) {
 		parse_sensor_message(&currentRxMessage);
 
 		if(currentRxMessage.IsMessageReady == true && currentRxMessage.IsCheckSumValid == true){

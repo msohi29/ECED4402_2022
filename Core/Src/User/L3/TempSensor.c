@@ -30,7 +30,7 @@ void RunTempSensor(TimerHandle_t xTimer)
 	temp = rand() % variance + mean;
 
 	// Update Temp:
-	TempUp = (temp > prev_temp);
+//	TempUp = (temp > prev_temp);
 
 	send_sensorData_message(Temperature, temp);
 }
