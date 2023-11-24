@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <User/L3/OxygenSensor.h>
 #include <User/L3/pHSensor.h>
+#include <User/L3/TempSensor.h>
 
 #include "User/L2/Comm_Datalink.h"
 #include "User/L4/SensorPlatform.h"

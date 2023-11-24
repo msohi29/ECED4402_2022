@@ -4,7 +4,7 @@
  *  Created on: Oct. 21, 2022
  *      Author: Andre Hendricks / Dr. JF Bousquet
  */
-
+#include <stdlib.h>
 #include <stdbool.h>
 #include <User/L3/TempSensor.h>
 
@@ -30,7 +30,7 @@ void RunTempSensor(TimerHandle_t xTimer)
 	temp = rand() % variance + mean;
 
 	// Update Temp:
-	TempUp = (temp > temp_prev);
+	TempUp = (temp > prev_temp);
 
-	send_sensorData_message(Oxygen, o2);
+	send_sensorData_message(Temperature, temp);
 }

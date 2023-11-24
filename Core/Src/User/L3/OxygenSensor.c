@@ -4,7 +4,7 @@
  *  Created on: Oct. 21, 2022
  *      Author: Andre Hendricks / Dr. JF Bousquet
  */
-
+#include <stdlib.h>
 #include <stdbool.h>
 #include <User/L3/OxygenSensor.h>
 

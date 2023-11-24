@@ -140,12 +140,12 @@ void SensorControllerTask(void *params)
 				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
 					if(currentRxMessage.messageId == 3) { // 3 -> data message
 						if(currentRxMessage.SensorID == pH) {
-							sprintf(str, "pH Sensor Data: %dpH\r\n", currentRxMessage.params);
+							sprintf(str, "pH Sensor Data: %d pH\r\n", currentRxMessage.params);
 						} else if (currentRxMessage.SensorID == Oxygen) {
-							sprintf(str, "Oxygen Sensor Data: %fmg/l\r\n", currentRxMessage.params/10);
+							sprintf(str, "Oxygen Sensor Data: %f mg/l\r\n", (float)currentRxMessage.params/10.0);
 						}
 						else if (currentRxMessage.SensorID == Temperature) {
-							sprintf(str, "Temperature Sensor Data: %dC\r\n", currentRxMessage.params);
+							sprintf(str, "Temperature Sensor Data: %d C\r\n", currentRxMessage.params);
 						}
 					}
 				}
