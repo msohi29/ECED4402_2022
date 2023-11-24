@@ -55,7 +55,7 @@ void SensorControllerTask(void *params)
 
 	enum states state = Wait_;
 
-	xTimer = xTimerCreate("Timer1",5000,pdTRUE,( void * ) 0, CheckEnableSensor);
+	xTimer = xTimerCreate("Timer1", 5000, pdTRUE,( void * ) 0, CheckEnableSensor);
 
 	char str[60];
 
@@ -90,9 +90,9 @@ void SensorControllerTask(void *params)
 			sprintf(str, "<<<<<<<<<<<<<<<<< Starting Sensors >>>>>>>>>>>>>>\r\n");
 			print_str(str);
 
-			send_sensorEnable_message(pH, 1000);
-			send_sensorEnable_message(Oxygen, 2500);
-			send_sensorEnable_message(Temperature, 5000);
+			send_sensorEnable_message(pH, 5000);
+			send_sensorEnable_message(Oxygen, 3000);
+			send_sensorEnable_message(Temperature, 2000);
 
 			// Start timer:
 			xTimerStart(xTimer, 0);
@@ -140,12 +140,15 @@ void SensorControllerTask(void *params)
 				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
 					if(currentRxMessage.messageId == 3) { // 3 -> data message
 						if(currentRxMessage.SensorID == pH) {
-							sprintf(str, "pH Sensor Data: %d pH\r\n", currentRxMessage.params);
+							sprintf(str, "pH Sensor Data: %.1f pH\r\n", (float)currentRxMessage.params/10.0);
+							print_str(str);
 						} else if (currentRxMessage.SensorID == Oxygen) {
-							sprintf(str, "Oxygen Sensor Data: %f mg/l\r\n", (float)currentRxMessage.params/10.0);
+							sprintf(str, "Oxygen Sensor Data: %.1f mg/l\r\n", (float)currentRxMessage.params/10.0);
+							print_str(str);
 						}
 						else if (currentRxMessage.SensorID == Temperature) {
 							sprintf(str, "Temperature Sensor Data: %d C\r\n", currentRxMessage.params);
+							print_str(str);
 						}
 					}
 				}
@@ -155,9 +158,6 @@ void SensorControllerTask(void *params)
 
 			// Stop timer:
 			xTimerStop(xTimer, 0);
-
-			print_str(str);
-
 
 			// Check for RESET from computer:
 			sprintf(str, "<<<<<<<<<<<<< Checking for RESET from PC >>>>>>>>>>>>>\r\n");
