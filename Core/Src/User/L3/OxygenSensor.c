@@ -12,17 +12,23 @@
 #include "FreeRTOS.h"
 #include "Timers.h"
 
+extern bool TempUp;
 
 /******************************************************************************
 This is a software callback function.
 ******************************************************************************/
-void RunDepthSensor(TimerHandle_t xTimer)
+void RunOxygenSensor(TimerHandle_t xTimer)
 {
 	const uint16_t variance = 25;
 	const uint16_t mean = 65;
 	uint16_t o2 = 0;
+	uint16_t o2_prev = 0;
 
-
+	if(TempUp) {
+		while((o2 = (rand() % variance) + mean) > o2_prev);
+	} else {
+		while((o2 = (rand() % variance) + mean) < o2_prev);
+	}
 
 	send_sensorData_message(Oxygen, o2);
 }

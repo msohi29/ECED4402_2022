@@ -11,6 +11,6 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 
-void RunDepthSensor(TimerHandle_t xTimer);
+void RunOxygenSensor(TimerHandle_t xTimer);
 
 #endif /* INC_USER_L3_OXYGENSENSOR_H_ */

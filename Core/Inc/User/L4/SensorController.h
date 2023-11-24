@@ -10,10 +10,12 @@
 
 
 struct SensorStates{
-	bool IsAcousticAck;
-	bool IsDepthAck;
-	uint16_t DepthData;
-	uint16_t AcousticData;
+	bool IspHAck;
+	bool IsOxygenAck;
+	bool IsTempAck;
+	uint16_t pHData;
+	uint16_t OxygenData;
+	uint16_t TempData;
 };
 void HostPC_RX_Task();
 void SensorPlatform_RX_Task();

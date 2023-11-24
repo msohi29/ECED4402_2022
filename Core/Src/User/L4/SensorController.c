@@ -51,7 +51,7 @@ void SensorControllerTask(void *params)
 {
 	//char HostPCMessage[50];
 	struct CommMessage currentRxMessage = {0};
-	int Acoustic_enabled = 0, Depth_enabled = 0, Disabled = 0;
+	int pH_enabled = 0, Oxygen_enabled = 0, Temp_enabled = 0, Disabled = 0;
 
 	enum states state = Wait_;
 
@@ -90,8 +90,9 @@ void SensorControllerTask(void *params)
 			sprintf(str, "<<<<<<<<<<<<<<<<< Starting Sensors >>>>>>>>>>>>>>\r\n");
 			print_str(str);
 
-			send_sensorEnable_message(Acoustic, 1000);
-			send_sensorEnable_message(Depth, 5000);
+			send_sensorEnable_message(pH, 5000);
+			send_sensorEnable_message(Oxygen, 5000);
+			send_sensorEnable_message(Temperature, 5000);
 
 			// Start timer:
 			xTimerStart(xTimer, 0);
@@ -99,10 +100,12 @@ void SensorControllerTask(void *params)
 			while(!Sensors_Expired) {
 				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
 					if(currentRxMessage.messageId == 1) { // 1-> Ack Message
-						if(currentRxMessage.SensorID == Acoustic) {
-							Acoustic_enabled = 1;
-						} else if (currentRxMessage.SensorID == Depth) {
-							Depth_enabled = 1;
+						if(currentRxMessage.SensorID == pH) {
+							pH_enabled = 1;
+						} else if (currentRxMessage.SensorID == Oxygen) {
+							Oxygen_enabled = 1;
+						} else if (currentRxMessage.SensorID == Temperature) {
+							Temp_enabled = 1;
 						}
 					}
 				}
@@ -112,7 +115,7 @@ void SensorControllerTask(void *params)
 			// Stop timer:
 			xTimerStop(xTimer, 0);
 
-			if(Acoustic_enabled && Depth_enabled) {
+			if(pH_enabled && Oxygen_enabled && Temp_enabled) {
 				state = Parse_Sensor_Data;
 				Sensors_Expired = 0;
 			} else {
@@ -136,10 +139,13 @@ void SensorControllerTask(void *params)
 			while(!Sensors_Expired) {
 				if(xQueueReceive(Queue_Sensor_Data, &currentRxMessage, 0) == pdPASS) {
 					if(currentRxMessage.messageId == 3) { // 3 -> data message
-						if(currentRxMessage.SensorID == Acoustic) {
-							sprintf(str, "Acoustic Sensor Data: %d\r\n", currentRxMessage.params);
-						} else if (currentRxMessage.SensorID == Depth) {
-							sprintf(str, "Depth Sensor Data: %d\r\n", currentRxMessage.params);
+						if(currentRxMessage.SensorID == pH) {
+							sprintf(str, "pH Sensor Data: %dpH\r\n", currentRxMessage.params);
+						} else if (currentRxMessage.SensorID == Oxygen) {
+							sprintf(str, "Oxygen Sensor Data: %fmg/l\r\n", currentRxMessage.params/10);
+						}
+						else if (currentRxMessage.SensorID == Temperature) {
+							sprintf(str, "Temperature Sensor Data: %dC\r\n", currentRxMessage.params);
 						}
 					}
 				}

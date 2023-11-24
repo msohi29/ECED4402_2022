@@ -1,0 +1,36 @@
+/*
+ * DepthSensorController.c
+ *
+ *  Created on: Oct. 21, 2022
+ *      Author: Andre Hendricks / Dr. JF Bousquet
+ */
+
+#include <stdbool.h>
+#include <User/L3/TempSensor.h>
+
+#include "User/L2/Comm_Datalink.h"
+#include "FreeRTOS.h"
+#include "Timers.h"
+
+
+bool TempUp = false;
+
+
+/******************************************************************************
+This is a software callback function.
+******************************************************************************/
+void RunTempSensor(TimerHandle_t xTimer)
+{
+	const uint16_t variance = 25;
+	const uint16_t mean = 65;
+	uint16_t temp = 0;
+	uint16_t prev_temp = 0;
+
+	// Calculate temp:
+	temp = rand() % variance + mean;
+
+	// Update Temp:
+	TempUp = (temp > temp_prev);
+
+	send_sensorData_message(Oxygen, o2);
+}

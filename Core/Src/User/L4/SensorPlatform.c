@@ -31,22 +31,30 @@ It is also responsible for starting the timers for each sensor
 void SensorPlatformTask(void *params)
 {
 	const TickType_t TimerDefaultPeriod = 1000;
-	TimerHandle_t TimerID_AcousticSensor,TimerID_DepthSensor;
+	TimerHandle_t TimerID_OxygenSensor,TimerID_pHSensor, TimerID_TempSensor;
 
-	TimerID_DepthSensor = xTimerCreate(
-		"Depth Sensor Task",
+	TimerID_pHSensor = xTimerCreate(
+		"PH Sensor Task",
 		TimerDefaultPeriod,		// Period: Needed to be changed based on parameter
 		pdTRUE,		// Autoreload: Continue running till deleted or stopped
 		(void*)0,
-		RunDepthSensor
+		RunpHSensor
 		);
 
-	TimerID_AcousticSensor = xTimerCreate(
-		"Acoustic Sensor Task",
+	TimerID_OxygenSensor = xTimerCreate(
+		"Oxygen Sensor Task",
 		TimerDefaultPeriod,		// Period: Needed to be changed based on parameter
 		pdTRUE,		// Autoreload: Continue running till deleted or stopped
 		(void*)1,
-		RunAcousticSensor
+		RunOxygenSensor
+		);
+
+	TimerID_TempSensor = xTimerCreate(
+		"Temp Sensor Task",
+		TimerDefaultPeriod,		// Period: Needed to be changed based on parameter
+		pdTRUE,		// Autoreload: Continue running till deleted or stopped
+		(void*)2,
+		RunTempSensor
 		);
 
 	request_sensor_read();  // requests a usart read (through the callback)
@@ -63,8 +71,9 @@ void SensorPlatformTask(void *params)
 				case Controller:
 					switch(currentRxMessage.messageId){
 						case 0:
-							xTimerStop(TimerID_DepthSensor, portMAX_DELAY);
-							xTimerStop(TimerID_AcousticSensor, portMAX_DELAY);
+							xTimerStop(TimerID_pHSensor, portMAX_DELAY);
+							xTimerStop(TimerID_OxygenSensor, portMAX_DELAY);
+							xTimerStop(TimerID_TempSensor, portMAX_DELAY);
 							send_ack_message(RemoteSensingPlatformReset);
 							break;
 						case 1: //Do Nothing
@@ -73,12 +82,12 @@ void SensorPlatformTask(void *params)
 							break;
 						}
 					break;
-				case Acoustic:
+				case pH:
 					switch(currentRxMessage.messageId){
 						case 0:
-							xTimerChangePeriod(TimerID_AcousticSensor, currentRxMessage.params, portMAX_DELAY);
-							xTimerStart(TimerID_AcousticSensor, portMAX_DELAY);
-							send_ack_message(AcousticSensorEnable);
+							xTimerChangePeriod(TimerID_pHSensor, currentRxMessage.params, portMAX_DELAY);
+							xTimerStart(TimerID_pHSensor, portMAX_DELAY);
+							send_ack_message(pHSensorEnable);
 							break;
 						case 1: //Do Nothing
 							break;
@@ -86,12 +95,12 @@ void SensorPlatformTask(void *params)
 							break;
 					}
 					break;
-				case Depth:
+				case Oxygen:
 					switch(currentRxMessage.messageId){
 						case 0:
-							xTimerChangePeriod(TimerID_DepthSensor, currentRxMessage.params, portMAX_DELAY);
-							xTimerStart(TimerID_DepthSensor, portMAX_DELAY);
-							send_ack_message(DepthSensorEnable);
+							xTimerChangePeriod(TimerID_OxygenSensor, currentRxMessage.params, portMAX_DELAY);
+							xTimerStart(TimerID_OxygenSensor, portMAX_DELAY);
+							send_ack_message(OxygenSensorEnable);
 							break;
 						case 1: //Do Nothing
 							break;
@@ -99,8 +108,21 @@ void SensorPlatformTask(void *params)
 							break;
 					}
 					break;
-					default://Should not get here
-						break;
+				case Temperature:
+					switch(currentRxMessage.messageId){
+						case 0:
+							xTimerChangePeriod(TimerID_TempSensor, currentRxMessage.params, portMAX_DELAY);
+							xTimerStart(TimerID_TempSensor, portMAX_DELAY);
+							send_ack_message(TemperatureSensorEnable);
+							break;
+						case 1: //Do Nothing
+							break;
+						case 3: //Do Nothing
+							break;
+					}
+					break;
+				default://Should not get here
+					break;
 			}
 			ResetMessageStruct(&currentRxMessage);
 		}
