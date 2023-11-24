@@ -21,8 +21,8 @@ This is a software callback function.
 ******************************************************************************/
 void RunTempSensor(TimerHandle_t xTimer)
 {
-	const uint16_t variance = 25;
-	const uint16_t mean = 65;
+	const uint16_t variance = 10;
+	const uint16_t mean = 10;
 	uint16_t temp = 0;
 	uint16_t prev_temp = 0;
 
@@ -30,7 +30,7 @@ void RunTempSensor(TimerHandle_t xTimer)
 	temp = rand() % variance + mean;
 
 	// Update Temp:
-//	TempUp = (temp > prev_temp);
+	TempUp = (temp > prev_temp);
 
 	send_sensorData_message(Temperature, temp);
 }

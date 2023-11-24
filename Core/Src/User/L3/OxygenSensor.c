@@ -19,18 +19,19 @@ This is a software callback function.
 ******************************************************************************/
 void RunOxygenSensor(TimerHandle_t xTimer)
 {
-	const uint16_t variance = 25;
+	const uint16_t variance = 15;
 	const uint16_t mean = 65;
 	uint16_t o2 = 0;
-	uint16_t o2_prev = 0;
+	uint16_t o2_prev = 73;
 
-//	if(TempUp) {
-//		while((o2 = (rand() % variance) + mean) > o2_prev);
-//	} else {
-//		while((o2 = (rand() % variance) + mean) < o2_prev);
-//	}
+	if(TempUp) {
+		while((o2 = (rand() % variance) + mean) > o2_prev);
+	} else {
+		while((o2 = (rand() % variance) + mean) < o2_prev);
+	}
 
-	o2 = (rand() % variance) + mean;
+	o2_prev = o2;
+	//o2 = (rand() % variance) + mean;
 
 	send_sensorData_message(Oxygen, o2);
 }
