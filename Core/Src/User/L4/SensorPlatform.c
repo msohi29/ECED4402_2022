@@ -5,10 +5,10 @@
  *      Author: Andre Hendricks / Dr. JF Bousquet
  */
 #include <stdio.h>
+#include <User/L3/OxygenSensor.h>
+#include <User/L3/pHSensor.h>
 
 #include "User/L2/Comm_Datalink.h"
-#include "User/L3/AcousticSensor.h"
-#include "User/L3/DepthSensor.h"
 #include "User/L4/SensorPlatform.h"
 #include "User/util.h"
 

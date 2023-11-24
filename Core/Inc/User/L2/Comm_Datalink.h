@@ -16,8 +16,8 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-enum SensorId_t {None, Controller, Acoustic, Depth};
-enum AckTypes{RemoteSensingPlatformReset, AcousticSensorEnable, DepthSensorEnable};
+enum SensorId_t {None, Controller, pH, Oxygen, Temperature};
+enum AckTypes{RemoteSensingPlatformReset, pHSensorEnable, OxygenSensorEnable, TemperatureSensorEnable};
 enum HostPCCommands{PC_Command_NONE,PC_Command_START,PC_Command_RESET};
 
 struct CommMessage

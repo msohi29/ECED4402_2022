@@ -95,10 +95,12 @@ void parse_sensor_message(struct CommMessage* currentRxMessage)
 					sensorId[sensorIdIdx] = '\0';
 					if(strcmp(sensorId, "CNTRL") == 0)//Sensor ID: Controller
 						currentRxMessage->SensorID = Controller;
-					else if(strcmp(sensorId, "ACSTC") == 0)//Sensor ID: Acoustic
-						currentRxMessage->SensorID = Acoustic;
-					else if(strcmp(sensorId, "DEPTH") == 0)//Sensor ID: Depth
-						currentRxMessage->SensorID = Depth;
+					else if(strcmp(sensorId, "PHSEN") == 0)//Sensor ID: pH
+						currentRxMessage->SensorID = pH;
+					else if(strcmp(sensorId, "O2SEN") == 0)//Sensor ID: Oxygen
+						currentRxMessage->SensorID = Oxygen;
+					else if(strcmp(sensorId, "TEMPS") == 0)//Sensor ID: Temperature
+						currentRxMessage->SensorID = Temperature;
 					else{//Sensor ID: None
 						currentRxMessage->SensorID = None;
 						currentState = Waiting_S;
@@ -189,11 +191,14 @@ void send_sensorData_message(enum SensorId_t sensorType, uint16_t data){
 	char tx_sensor_buffer[50];
 
 	switch(sensorType){
-	case Acoustic:
-		sprintf(tx_sensor_buffer, "$ACSTC,03,%08u,*,00\n", data);
+	case pH:
+		sprintf(tx_sensor_buffer, "$PHSEN,03,%08u,*,00\n", data);
 		break;
-	case Depth:
-		sprintf(tx_sensor_buffer, "$DEPTH,03,%08u,*,00\n", data);
+	case Oxygen:
+		sprintf(tx_sensor_buffer, "$O2SEN,03,%08u,*,00\n", data);
+		break;
+	case Temperature:
+		sprintf(tx_sensor_buffer, "$TEMPS,03,%08u,*,00\n", data);
 		break;
 	default:
 		break;
@@ -205,11 +210,14 @@ void send_sensorEnable_message(enum SensorId_t sensorType, uint16_t TimePeriod_m
 	char tx_sensor_buffer[50];
 
 	switch(sensorType){
-	case Acoustic:
-		sprintf(tx_sensor_buffer, "$ACSTC,00,%08u,*,00\n", TimePeriod_ms);
+	case pH:
+		sprintf(tx_sensor_buffer, "$PHSEN,00,%08u,*,00\n", TimePeriod_ms);
 		break;
-	case Depth:
-		sprintf(tx_sensor_buffer, "$DEPTH,00,%08u,*,00\n", TimePeriod_ms);
+	case Oxygen:
+		sprintf(tx_sensor_buffer, "$O2SEN,00,%08u,*,00\n", TimePeriod_ms);
+		break;
+	case Temperature:
+		sprintf(tx_sensor_buffer, "$TEMPS,00,%08u,*,00\n", TimePeriod_ms);
 		break;
 	default:
 		break;
@@ -232,11 +240,14 @@ void send_ack_message(enum AckTypes AckType){
 	case RemoteSensingPlatformReset:
 		sprintf(tx_sensor_buffer, "$CNTRL,01,,*,00\n");
 		break;
-	case AcousticSensorEnable:
-		sprintf(tx_sensor_buffer, "$ACSTC,01,,*,00\n");
+	case pHSensorEnable:
+		sprintf(tx_sensor_buffer, "$PHSEN,01,,*,00\n");
 		break;
-	case DepthSensorEnable:
-		sprintf(tx_sensor_buffer, "$DEPTH,01,,*,00\n");
+	case OxygenSensorEnable:
+		sprintf(tx_sensor_buffer, "$O2SEN,01,,*,00\n");
+		break;
+	case TemperatureSensorEnable:
+		sprintf(tx_sensor_buffer, "$TEMPS,01,,*,00\n");
 		break;
 	}
 
